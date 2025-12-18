@@ -1,0 +1,36 @@
+services:
+  data:
+    image: mariadb:11
+    container_name: data
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - tp3net
+
+  script:
+    build: ./script
+    container_name: script
+    volumes:
+      - ./src:/app
+    networks:
+      - tp3net
+    depends_on:
+      - data
+
+  http:
+    image: nginx:1.29
+    container_name: http
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/app
+      - ./config/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - tp3net
+    depends_on:
+      - script
+
+networks:
+  tp3net: {}
